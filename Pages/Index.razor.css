@@ -1,0 +1,84 @@
+﻿.terminal_main, .terminal_footer {
+    height:  100%;
+    margin-left: 1rem;
+    margin-right: 1rem;
+} 
+
+.terminal_header {
+    height: 4rem;
+    display: flex;
+    align-items: center; 
+    justify-content: center;
+}
+
+.terminal_footer {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2rem;
+}
+
+.terminal_form::before {
+	content: '>';
+    padding-right: 10px;
+} 
+
+.terminal_input {
+	border: 0;
+	background: transparent;
+	border-radius: 0;
+}
+.terminal_input:focus {
+	outline: none;
+}
+
+.terminal_input {
+	line-height: 1;
+	display: inline-block;
+	box-sizing: border-box;
+	padding: 0.05em 0;
+	color: #fff;
+    width: 95%;
+}
+
+@media (max-width: 500px) {
+    .terminal_input {
+        width: 90%;
+    }
+}
+
+.terminal_input::placeholder {
+    color: #47cf73;
+} 
+
+.terminal {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    height: calc(100vh - 4rem - 2rem);
+    overflow-y: auto;
+    border: 1px solid white;
+    padding: 10px;
+
+    background-image: url('mountain.png');
+    background-position: center;
+	background-repeat: no-repeat;
+}
+
+.terminal::-webkit-scrollbar {
+    width: 10px;
+}
+
+.terminal::-webkit-scrollbar-thumb {
+    background-color: #47cf73;
+    border-radius: 10px;
+    background-clip: padding-box;
+    border: 2px solid transparent;
+}
+
+.terminal::-webkit-scrollbar-track {
+    background-color: #282828;
+    border-radius: 10px;
+    box-shadow: inset 0px 0px 5px #282828;
+}

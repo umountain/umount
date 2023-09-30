@@ -1,0 +1,65 @@
+﻿@page "/"
+@inject ICommandExecutor executor;
+
+<div class="terminal_main"> 
+    <header class="terminal_header">UMOUNT</header>
+
+    <div class="terminal">        
+        @foreach (var cmd in Commands)
+        {
+            <div class="terminal_text">@cmd</div>
+        }      
+    </div>
+
+    <footer class="terminal_footer">
+        <div class="terminal_form">
+            <input class="terminal_input" type="text" placeholder="Command Line" @bind="Command" @bind:event="oninput" @onkeydown="KeyDown"/>
+        </div>
+    </footer>
+</div> 
+
+@code {
+    private List<MarkupString> Commands {get; set;}
+    private string? Command {get; set;}
+
+    protected override Task OnInitializedAsync()
+    {
+        Commands = new List<MarkupString>
+        {
+            new("Welcome to <span class=\"highlight\">UMOUNT.</span>"),
+            new("<span class=\"highlight\">UMOUNT</span> is a space to rcord the mountains you have climbed."),
+            new("You can check the commands through the <span class=\"highlight\">help</span> command."),
+        };
+        return base.OnInitializedAsync();
+    }
+
+    private void KeyDown(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter")            
+        {
+            Execute();
+        }
+    }
+
+    private void Execute()
+    {
+        if (Command == "history")
+        {
+            Console.WriteLine("oh yeah!!");
+        }
+        else if (Command == "clear")
+        {
+            Commands.Clear();        
+        }
+        else if (Command == "umount")
+        {
+            Commands.AddRange(executor.Execute(Command));
+        }
+        else 
+        {
+            Commands.Add(new MarkupString($"umount: command not found: <span class=\"highlight\"> {Command} </span>"));
+        }
+        
+        Command = string.Empty;
+    }
+}
