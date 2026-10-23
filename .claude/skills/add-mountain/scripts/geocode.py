@@ -4,6 +4,7 @@
 사용법:
   geocode.py peak <산 이름> [--ele 높이]          # 정상 후보 (표고 포함)
   geocode.py place <장소명> --near <lat>,<lon> [--mountain 산이름]   # 정상 근처(15km) 장소 후보
+  geocode.py parking-near <lat> <lon> [--radius 600]  # 좌표 주변 주차장 (Overpass)
   geocode.py reverse <lat> <lon>                  # 좌표 → 주소
 """
 import argparse
@@ -18,6 +19,9 @@ import urllib.request
 UA = "umount-add-mountain/1.0 (+https://github.com/umountain/umount)"
 NOMINATIM = "https://nominatim.openstreetmap.org"
 PHOTON = "https://photon.komoot.io/api/"
+OVERPASS = ["https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+            "https://overpass.kumi.systems/api/interpreter",
+            "https://overpass-api.de/api/interpreter"]
 
 
 def get(url):
@@ -93,6 +97,28 @@ def place(args):
     return sorted(out, key=lambda x: (not x["is_parking"], x["dist_km"]))
 
 
+def parking_near(args):
+    """좌표 주변 OSM 주차장(amenity=parking). 이름 없는 주차장도 찾을 수 있다."""
+    query = f"[out:json][timeout:25];nwr(around:{args.radius},{args.lat},{args.lon})[amenity=parking];out center tags;"
+    body = urllib.parse.urlencode({"data": query}).encode()
+    for url in OVERPASS:
+        try:
+            req = urllib.request.Request(url, data=body, headers={"User-Agent": UA})
+            with urllib.request.urlopen(req, timeout=40) as r:
+                elements = json.load(r)["elements"]
+            break
+        except Exception as e:
+            print(f"[overpass] {url}: {e}", file=sys.stderr)
+    else:
+        sys.exit("Overpass 서버 응답 없음 (잠시 후 재시도)")
+    out = []
+    for e in elements:
+        c = e.get("center", e)
+        out.append({"osm": f"{e['type']}/{e['id']}", "name": e.get("tags", {}).get("name"), "lat": c["lat"], "lon": c["lon"],
+                    "dist_m": round(dist_km(args.lat, args.lon, c["lat"], c["lon"]) * 1000), "tags": e.get("tags")})
+    return sorted(out, key=lambda x: x["dist_m"])
+
+
 def reverse(args):
     params = urllib.parse.urlencode({"lat": args.lat, "lon": args.lon, "format": "jsonv2",
                                      "addressdetails": 1, "accept-language": "ko", "zoom": 18})
@@ -107,9 +133,11 @@ def main():
     p = sub.add_parser("place"); p.add_argument("query"); p.add_argument("--near", required=True)
     p.add_argument("--mountain", help="산 이름 (검색어 변형에 사용)")
     p.add_argument("--radius", type=float, default=15)
+    p = sub.add_parser("parking-near"); p.add_argument("lat", type=float); p.add_argument("lon", type=float)
+    p.add_argument("--radius", type=int, default=600, help="미터")
     p = sub.add_parser("reverse"); p.add_argument("lat", type=float); p.add_argument("lon", type=float)
     args = ap.parse_args()
-    result = {"peak": peak, "place": place, "reverse": reverse}[args.cmd](args)
+    result = {"peak": peak, "place": place, "parking-near": parking_near, "reverse": reverse}[args.cmd](args)
     json.dump(result, sys.stdout, ensure_ascii=False, indent=2)
     print()
 
