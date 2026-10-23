@@ -1,0 +1,424 @@
+.page {
+    min-height: 100vh;
+    box-sizing: border-box;
+    padding: clamp(0px, 3vw, 32px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card {
+    width: 100%;
+    max-width: 1280px;
+    height: min(780px, calc(100vh - 2 * clamp(0px, 3vw, 32px)));
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr));
+    grid-auto-rows: minmax(0, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .06);
+}
+
+/* ---------- 왼쪽: 도장 / 지도 ---------- */
+.board {
+    padding: clamp(16px, 3vw, 28px);
+    background: var(--paper);
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.brand {
+    font-family: var(--brand);
+    font-size: 24px;
+    letter-spacing: .02em;
+    color: var(--forest);
+    white-space: nowrap;
+}
+
+.tabs {
+    display: flex;
+    border: 1px solid var(--ink);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.tabs button {
+    height: 30px;
+    padding: 0 14px;
+    border: none;
+    white-space: nowrap;
+    background: transparent;
+    color: var(--ink);
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.filters {
+    display: flex;
+    gap: 6px;
+}
+
+.filters button {
+    height: 30px;
+    padding: 0 12px;
+    border-radius: 15px;
+    white-space: nowrap;
+    border: 1px solid var(--ink);
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.tabs button.on,
+.filters button.on {
+    background: var(--ink);
+    color: var(--paper);
+}
+
+.map {
+    flex: 1;
+    min-height: 320px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--sand);
+    overflow: hidden;
+}
+
+.stamp-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stamps {
+    width: 100%;
+    max-width: 600px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(clamp(84px, 22vw, 104px), 1fr));
+    gap: 14px 8px;
+    justify-items: center;
+}
+
+.stamp {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: opacity .2s;
+}
+
+.seal {
+    position: relative;
+    width: clamp(80px, 21vw, 96px);
+    aspect-ratio: 1;
+    box-sizing: border-box;
+    border-radius: 50%;
+    border: 2.5px solid var(--ink);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(var(--rot));
+    background: var(--bg);
+    box-shadow: inset 0 0 0 4px var(--bg), inset 0 0 0 5px var(--ink);
+    color: var(--ink);
+    transition: transform .15s;
+}
+
+.stamp:hover .seal {
+    transform: rotate(0deg) scale(1.05);
+}
+
+.seal-alt {
+    font: 600 9px var(--mono);
+}
+
+.seal-name {
+    font-family: var(--serif);
+    font-weight: 800;
+    font-size: 15px;
+    line-height: 1.2;
+    text-align: center;
+    word-break: keep-all;
+    padding: 0 8px;
+}
+
+.seal-date {
+    font: 9px var(--mono);
+}
+
+.seal-count {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font: 600 11px var(--mono);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ---------- 오른쪽: 상세 ---------- */
+.detail {
+    min-width: 0;
+    min-height: 0;
+    padding: clamp(20px, 4vw, 40px);
+    background: var(--paper-light);
+    background-image: repeating-linear-gradient(var(--paper-light) 0 31px, var(--sand) 31px 32px);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow: auto;
+}
+
+.head {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.no {
+    font: 600 11px var(--mono);
+    color: var(--accent);
+}
+
+.name {
+    font-family: var(--serif);
+    font-weight: 800;
+    font-size: clamp(26px, 5vw, 34px);
+    letter-spacing: -0.02em;
+}
+
+.location {
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.parking {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.parking-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.p-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    background: var(--accent);
+    color: #fff;
+    font: 700 12px Pretendard, system-ui, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.parking-map {
+    height: 220px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--sand);
+}
+
+.parking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.parking-list a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--ink);
+    text-decoration: none;
+    padding: 6px 8px;
+    margin: 0 -8px;
+    border-radius: 6px;
+}
+
+.parking-list a:hover {
+    background: var(--sand);
+}
+
+.parking-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+}
+
+.parking-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 10px;
+}
+
+.parking-name {
+    font-weight: 600;
+}
+
+.parking-fee {
+    color: var(--muted);
+}
+
+.parking-address {
+    font-size: 12px;
+    color: var(--faint);
+}
+
+.gmaps {
+    flex: none;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    background: #1a73e8;
+    border-radius: 4px;
+    padding: 4px 7px;
+    white-space: nowrap;
+}
+
+.visit {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.visit-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    font-family: var(--serif);
+}
+
+.visit-date {
+    font-weight: 600;
+    font-size: 17px;
+    white-space: nowrap;
+}
+
+.visit-dur {
+    font-size: 13px;
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.course {
+    display: flex;
+    flex-direction: column;
+    padding-left: 6px;
+}
+
+.step {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+}
+
+.rail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 10px;
+}
+
+.dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--faint);
+    margin-top: 6px;
+    flex: none;
+}
+
+.line {
+    flex: 1;
+    width: 1.5px;
+    background: var(--rail);
+    min-height: 12px;
+}
+
+.step-name {
+    font-size: 13.5px;
+    padding-bottom: 8px;
+}
+
+.visit-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.tag {
+    font: 600 10px var(--mono);
+    color: var(--forest);
+    border: 1px solid var(--forest);
+    border-radius: 3px;
+    padding: 2px 5px;
+}
+
+.sep {
+    color: var(--rail);
+}
+
+/* 카드 폭이 921px 미만이면 2열이 1열로 쌓임 */
+@media (max-width: 979.98px) {
+    .card {
+        height: auto;
+        grid-auto-rows: auto;
+    }
+
+    .map {
+        min-height: clamp(340px, 62vh, 600px);
+        height: clamp(340px, 62vh, 600px);
+    }
+}

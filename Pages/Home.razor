@@ -1,0 +1,288 @@
+@page "/"
+@using System.Globalization
+@using umount.Models
+@inject HttpClient Http
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<PageTitle>UMOUNT</PageTitle>
+
+<div class="page">
+    <div class="card">
+        <section class="board">
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <span class="brand">UMOUNT</span>
+                    <div class="tabs">
+                        @foreach (var (key, label) in ModeTabs)
+                        {
+                            <button class="@(mode == key ? "on" : null)" @onclick="() => SetMode(key)">@label</button>
+                        }
+                    </div>
+                </div>
+                <div class="filters">
+                    @foreach (var (key, label) in Filters)
+                    {
+                        <button class="@(filter == key ? "on" : null)" @onclick="() => filter = key">@label</button>
+                    }
+                </div>
+            </div>
+
+            @if (mode == "map")
+            {
+                <div class="map" @ref="mapEl"></div>
+            }
+            else
+            {
+                <div class="stamp-wrap">
+                    <div class="stamps">
+                        @foreach (var m in mountains)
+                        {
+                            var sel = m.Id == selected?.Id;
+                            var ink = sel ? "#d9622b" : InkFor(m);
+                            var bg = sel ? "#fbeee4" : "#efe9dc";
+                            <div class="stamp" style="opacity:@(Passes(m) ? "1" : "0.18")" @onclick="() => Pick(m.Id)">
+                                <div class="seal" style="--ink:@ink;--bg:@bg;--rot:@(((m.Id * 37) % 13) - 6)deg">
+                                    <span class="seal-alt">@Alt(m.Altitude)</span>
+                                    <span class="seal-name">@m.Name.Replace(" - ", " ")</span>
+                                    <span class="seal-date">@FirstVisit(m)</span>
+                                    @if (m.VisitCount > 1)
+                                    {
+                                        <span class="seal-count">×@m.VisitCount</span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </section>
+
+        <section class="detail" @ref="detailEl">
+            @if (selected is not null)
+            {
+                <div class="head">
+                    <span class="no">No. @selected.Id.ToString("00") · @Alt(selected.Altitude)</span>
+                    <span class="name">@selected.Name</span>
+                    <span class="location">@selected.Location</span>
+                </div>
+
+                @if (parkings.Count > 0)
+                {
+                    <div class="parking">
+                        <div class="parking-title"><span class="p-icon">P</span><span>주차장</span></div>
+                        <div class="parking-map" @ref="parkingEl"></div>
+                        <div class="parking-list">
+                            @foreach (var p in parkings)
+                            {
+                                <a href="@GoogleMaps(p)" target="_blank" rel="noopener">
+                                    <div class="parking-info">
+                                        <div class="parking-line">
+                                            <span class="parking-name">@p.Name</span>
+                                            <span class="parking-fee">@p.Fee</span>
+                                        </div>
+                                        <span class="parking-address">@p.Address</span>
+                                    </div>
+                                    <span class="gmaps">구글 지도 ↗</span>
+                                </a>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @foreach (var v in selected.Visits.OrderByDescending(v => v.Date))
+                {
+                    var steps = (v.Course ?? "").Split(" - ", StringSplitOptions.RemoveEmptyEntries);
+                    <div class="visit">
+                        <div class="visit-head">
+                            <span class="visit-date">@FormatDate(v.Date)</span>
+                            <span class="visit-dur">@v.Duration</span>
+                        </div>
+                        <div class="course">
+                            @for (var i = 0; i < steps.Length; i++)
+                            {
+                                <div class="step">
+                                    <div class="rail">
+                                        <span class="dot"></span>
+                                        @if (i < steps.Length - 1)
+                                        {
+                                            <span class="line"></span>
+                                        }
+                                    </div>
+                                    <span class="step-name">@steps[i]</span>
+                                </div>
+                            }
+                        </div>
+                        <div class="visit-meta">
+                            <span class="tag">소요</span>
+                            <span>@Elapsed(v.Duration)</span>
+                            <span class="sep">·</span>
+                            <span>주차 @(v.Parking?.Name ?? "기록 없음") · @(v.Parking?.Fee ?? "—")</span>
+                        </div>
+                    </div>
+                }
+            }
+        </section>
+    </div>
+</div>
+
+@code {
+    private static readonly (string Key, string Label)[] ModeTabs = [("stamp", "도장"), ("map", "지도")];
+    // 최소 고도 기준 필터 (0 = 전체)
+    private static readonly (int Key, string Label)[] Filters = [(0, "전체"), (500, "500m+"), (1000, "1,000m+"), (1500, "1,500m+")];
+    private const string WeekDays = "일월화수목금토";
+
+    private List<Mountain> mountains = new();
+    private Mountain? selected;
+    private List<ParkingInfo> parkings = new();
+    private string mode = "map";
+    private int filter;
+
+    private ElementReference mapEl;
+    private ElementReference parkingEl;
+    private ElementReference detailEl;
+    private IJSObjectReference? module;
+    private DotNetObjectReference<Home>? selfRef;
+    private bool overviewReady;
+    private int? parkingShownFor;
+    private (int?, int)? lastSync;
+    private bool revealPending;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var data = await Http.GetFromJsonAsync<MountainData>("data/mountains.json");
+            mountains = data?.Mountains ?? new();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading data: {ex.Message}");
+        }
+
+        // 기본 선택: 가장 많이 방문한 산(동률이면 최근 방문)
+        var initial = mountains
+            .OrderByDescending(m => m.VisitCount)
+            .ThenByDescending(m => m.Visits.Select(v => v.Date).DefaultIfEmpty().Max())
+            .FirstOrDefault();
+        if (initial is not null) Select(initial.Id);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (mountains.Count == 0) return;
+        module ??= await JS.InvokeAsync<IJSObjectReference>("import", "./js/dojang.js");
+        selfRef ??= DotNetObjectReference.Create(this);
+
+        if (mode == "map" && !overviewReady)
+        {
+            overviewReady = true;
+            lastSync = (selected?.Id, filter);
+            var points = mountains.Select(m => new { m.Id, m.Name, m.Altitude, m.Latitude, m.Longitude, m.VisitCount });
+            await module.InvokeVoidAsync("initOverview", mapEl, points, selfRef, selected?.Id, filter);
+        }
+        else if (overviewReady && lastSync != (selected?.Id, filter))
+        {
+            lastSync = (selected?.Id, filter);
+            await module.InvokeVoidAsync("syncOverview", selected?.Id, filter);
+        }
+
+        if (selected is not null && parkings.Count > 0)
+        {
+            if (parkingShownFor != selected.Id)
+            {
+                parkingShownFor = selected.Id;
+                var pts = parkings.Select(p => new { p.Latitude, p.Longitude, href = GoogleMaps(p) });
+                await module.InvokeVoidAsync("showParking", parkingEl,
+                    new { selected.Name, selected.Latitude, selected.Longitude }, pts);
+            }
+        }
+        else if (parkingShownFor is not null)
+        {
+            parkingShownFor = null;
+            await module.InvokeVoidAsync("disposeParking");
+        }
+
+        if (revealPending)
+        {
+            revealPending = false;
+            await module.InvokeVoidAsync("revealDetail", detailEl);
+        }
+    }
+
+    [JSInvokable]
+    public void OnMarkerClick(int id)
+    {
+        Pick(id);
+        StateHasChanged();
+    }
+
+    private void Pick(int id)
+    {
+        Select(id);
+        revealPending = true;
+    }
+
+    private void Select(int id)
+    {
+        selected = mountains.FirstOrDefault(m => m.Id == id);
+        parkings = selected?.Visits
+            .Where(v => v.Parking is not null)
+            .Select(v => v.Parking!)
+            .DistinctBy(p => p.Name)
+            .ToList() ?? new();
+    }
+
+    private async Task SetMode(string next)
+    {
+        if (mode == next) return;
+        mode = next;
+        if (overviewReady && module is not null)
+        {
+            overviewReady = false;
+            await module.InvokeVoidAsync("disposeOverview");
+        }
+    }
+
+    private bool Passes(Mountain m) => m.Altitude >= filter;
+
+    private static string InkFor(Mountain m) => m.Altitude >= 1000 ? "#2f5d46" : "#5b6e5e";
+
+    private static string Alt(double altitude) =>
+        Math.Round(altitude, MidpointRounding.AwayFromZero).ToString("N0", CultureInfo.InvariantCulture) + "m";
+
+    private static string FirstVisit(Mountain m) =>
+        m.Visits.Count == 0 ? "" : m.Visits.Min(v => v.Date).ToString("yy.MM.dd", CultureInfo.InvariantCulture);
+
+    private static string FormatDate(DateTime d) =>
+        $"{d.ToString("yyyy.MM.dd", CultureInfo.InvariantCulture)} ({WeekDays[(int)d.DayOfWeek]})";
+
+    private static string Elapsed(string? duration)
+    {
+        var parts = duration?.Split('~');
+        if (parts is not { Length: 2 }
+            || !TimeSpan.TryParse(parts[0].Trim(), CultureInfo.InvariantCulture, out var start)
+            || !TimeSpan.TryParse(parts[1].Trim(), CultureInfo.InvariantCulture, out var end))
+            return "—";
+        var minutes = (int)(end - start).TotalMinutes;
+        return $"{minutes / 60}h {minutes % 60:00}m";
+    }
+
+    private static string GoogleMaps(ParkingInfo p) =>
+        string.Create(CultureInfo.InvariantCulture, $"https://www.google.com/maps/search/?api=1&query={p.Latitude},{p.Longitude}");
+
+    public async ValueTask DisposeAsync()
+    {
+        if (module is not null)
+        {
+            try
+            {
+                await module.InvokeVoidAsync("disposeOverview");
+                await module.InvokeVoidAsync("disposeParking");
+                await module.DisposeAsync();
+            }
+            catch (JSDisconnectedException) { }
+        }
+        selfRef?.Dispose();
+    }
+}
