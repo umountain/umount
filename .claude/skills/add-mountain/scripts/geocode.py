@@ -101,15 +101,20 @@ def parking_near(args):
     """좌표 주변 OSM 주차장(amenity=parking). 이름 없는 주차장도 찾을 수 있다."""
     query = f"[out:json][timeout:25];nwr(around:{args.radius},{args.lat},{args.lon})[amenity=parking];out center tags;"
     body = urllib.parse.urlencode({"data": query}).encode()
-    for url in OVERPASS:
-        try:
-            req = urllib.request.Request(url, data=body, headers={"User-Agent": UA})
-            with urllib.request.urlopen(req, timeout=40) as r:
-                elements = json.load(r)["elements"]
+    elements = None
+    for attempt in range(3):  # 공용 서버가 자주 과부하라 20초 간격으로 재시도
+        for url in OVERPASS:
+            try:
+                req = urllib.request.Request(url, data=body, headers={"User-Agent": UA})
+                with urllib.request.urlopen(req, timeout=60) as r:
+                    elements = json.load(r)["elements"]
+                break
+            except Exception as e:
+                print(f"[overpass] {url}: {e}", file=sys.stderr)
+        if elements is not None:
             break
-        except Exception as e:
-            print(f"[overpass] {url}: {e}", file=sys.stderr)
-    else:
+        time.sleep(20)
+    if elements is None:
         sys.exit("Overpass 서버 응답 없음 (잠시 후 재시도)")
     out = []
     for e in elements:
