@@ -459,8 +459,8 @@
 }
 
 .section-label {
-    font: 600 10px var(--mono);
-    letter-spacing: .08em;
+    font: 600 11px Pretendard, system-ui, sans-serif;
+    letter-spacing: .04em;
     color: var(--faint);
 }
 

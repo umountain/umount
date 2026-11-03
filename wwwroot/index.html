@@ -7,8 +7,17 @@
     <title>UMOUNT</title>
     <base href="/" />
     <link rel="preload" id="webassembly" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Rubik+Dirt&family=Noto+Serif+KR:wght@400;600;800&display=swap" />
+    <!-- 외부 서버는 Blazor 런타임을 받는 동안 미리 연결해 둔다 (지도 타일은 앱이 뜬 뒤에 요청됨) -->
+    <link rel="preconnect" href="https://tiles.openfreemap.org" crossorigin />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://unpkg.com" />
+    <!-- Pretendard: 화면에 쓰인 글자 조각(unicode-range)만 받는 dynamic subset -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Serif+KR:wght@400;600;800&display=swap" />
+    <!-- Rubik Dirt는 로고에만 쓰므로 해당 글자만 받는다 -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik+Dirt&text=UMOUNT&display=swap" />
     <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
     <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
     <link rel="stylesheet" href="css/app.css" />
