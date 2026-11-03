@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>길을 잃으셨네요 · UMOUNT</title>
+    <!-- 배포 시 index.html과 함께 /umount/ 로 바뀜 (deploy.yml) -->
+    <base href="/" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Serif+KR:wght@600;800&family=Rubik+Dirt&display=swap" />
+    <style>
+        :root {
+            --ink: #1c211e;
+            --paper: #efe9dc;
+            --paper-light: #f8f4ea;
+            --line: #d6cdb9;
+            --muted: #6b6a5e;
+            --faint: #9a9483;
+            --forest: #2f5d46;
+            --accent: #d9622b;
+            --serif: 'Noto Serif KR', serif;
+            --mono: 'JetBrains Mono', ui-monospace, monospace;
+            --brand: 'Rubik Dirt', var(--serif);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            background: var(--paper);
+            color: var(--ink);
+            font-family: Pretendard, system-ui, -apple-system, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 등고선 배경 */
+        .contours {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            color: var(--line);
+        }
+
+        .page {
+            position: relative;
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 24px clamp(16px, 4vw, 40px);
+        }
+
+        .brand {
+            font-family: var(--brand);
+            font-size: 22px;
+            letter-spacing: .02em;
+            color: var(--forest);
+            text-decoration: none;
+            align-self: flex-start;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 32px 0 48px;
+        }
+
+        /* 404 도장 */
+        .seal {
+            --size: clamp(132px, 34vw, 168px);
+            width: var(--size);
+            height: var(--size);
+            border-radius: 50%;
+            border: 3px solid var(--accent);
+            box-shadow: inset 0 0 0 5px var(--paper), inset 0 0 0 6.5px var(--accent);
+            color: var(--accent);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            transform: rotate(-9deg);
+            animation: stamp .5s cubic-bezier(.2, 1.6, .4, 1) both;
+            margin-bottom: 32px;
+        }
+
+        .seal-top,
+        .seal-bottom {
+            font: 600 10px var(--mono);
+            letter-spacing: .14em;
+        }
+
+        .seal-code {
+            font: 800 clamp(40px, 11vw, 52px)/1 var(--serif);
+            letter-spacing: -0.02em;
+        }
+
+        @keyframes stamp {
+            from {
+                opacity: 0;
+                transform: rotate(-9deg) scale(1.6);
+            }
+        }
+
+        h1 {
+            margin: 0 0 12px;
+            font: 800 clamp(26px, 6vw, 34px)/1.25 var(--serif);
+            letter-spacing: -0.02em;
+        }
+
+        .desc {
+            margin: 0 0 28px;
+            font-size: 15px;
+            line-height: 1.65;
+            color: var(--muted);
+            word-break: keep-all;
+        }
+
+        .path {
+            display: inline-block;
+            max-width: 100%;
+            margin-bottom: 28px;
+            padding: 4px 10px;
+            border: 1px dashed var(--line);
+            border-radius: 6px;
+            background: var(--paper-light);
+            font: 12px var(--mono);
+            color: var(--faint);
+            overflow-wrap: anywhere;
+        }
+
+        .home {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 48px;
+            padding: 0 22px;
+            border-radius: 24px;
+            background: var(--forest);
+            color: #fff;
+            font: 600 15px Pretendard, system-ui, sans-serif;
+            text-decoration: none;
+            overflow: hidden;
+            box-shadow: 0 1px 2px rgba(28, 33, 30, .12), 0 6px 18px rgba(47, 93, 70, .25);
+            transition: transform .15s, box-shadow .15s;
+        }
+
+        .home:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(28, 33, 30, .12), 0 10px 24px rgba(47, 93, 70, .3);
+        }
+
+        .home:focus-visible {
+            outline: 3px solid var(--accent);
+            outline-offset: 3px;
+        }
+
+        /* 자동 이동 진행 표시 */
+        .home .progress {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            height: 3px;
+            width: 100%;
+            background: rgba(255, 255, 255, .55);
+            transform-origin: left;
+            transform: scaleX(0);
+        }
+
+        .arrow {
+            font-size: 18px;
+            line-height: 1;
+        }
+
+        .auto {
+            margin-top: 16px;
+            min-height: 20px;
+            font-size: 13px;
+            color: var(--faint);
+        }
+
+        .auto button {
+            margin-left: 6px;
+            padding: 2px 4px;
+            border: none;
+            background: none;
+            color: var(--muted);
+            font: inherit;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            cursor: pointer;
+        }
+
+        .auto button:focus-visible {
+            outline: 2px solid var(--accent);
+            border-radius: 3px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .seal {
+                animation: none;
+            }
+
+            .home {
+                transition: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <svg class="contours" aria-hidden="true" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" fill="none" stroke="currentColor" stroke-width="1.2">
+        <path d="M-50 620 C 180 540 300 640 470 560 S 760 420 900 470 S 1150 560 1260 500" />
+        <path d="M-50 660 C 190 590 320 690 490 610 S 770 470 910 520 S 1150 610 1260 550" />
+        <path d="M-50 700 C 200 640 340 740 510 660 S 780 520 920 570 S 1150 660 1260 600" />
+        <path d="M-50 740 C 210 690 360 790 530 710 S 790 570 930 620 S 1150 710 1260 650" />
+        <path d="M860 170 C 930 120 1040 130 1080 200 S 1040 330 950 320 S 800 240 860 170 Z" />
+        <path d="M830 160 C 920 90 1070 100 1120 200 S 1070 370 950 360 S 760 250 830 160 Z" />
+        <path d="M800 150 C 910 60 1100 70 1160 200 S 1100 410 950 400 S 720 260 800 150 Z" />
+        <path d="M110 150 C 160 110 250 120 270 180 S 220 280 160 260 S 70 200 110 150 Z" />
+        <path d="M80 140 C 150 80 280 90 310 180 S 240 320 160 300 S 30 210 80 140 Z" />
+    </svg>
+
+    <div class="page">
+        <a class="brand" href="./">UMOUNT</a>
+
+        <main>
+            <div class="seal" aria-hidden="true">
+                <span class="seal-top">NOT ON MAP</span>
+                <span class="seal-code">404</span>
+                <span class="seal-bottom">· UMOUNT ·</span>
+            </div>
+
+            <h1>길을 잃으셨네요</h1>
+            <p class="desc">찾으시는 길은 지도에 없어요.<br />첫 화면에서 다시 출발해 보세요.</p>
+            <span class="path" id="path"></span>
+
+            <a class="home" id="home" href="./">
+                <span>UMOUNT로 돌아가기</span>
+                <span class="arrow" aria-hidden="true">→</span>
+                <span class="progress" id="progress" aria-hidden="true"></span>
+            </a>
+            <p class="auto" id="auto" aria-live="polite"></p>
+        </main>
+    </div>
+
+    <script>
+        (() => {
+            const SECONDS = 5;
+            const home = new URL('./', document.baseURI).href;
+            const link = document.getElementById('home');
+            const path = document.getElementById('path');
+            const auto = document.getElementById('auto');
+            const progress = document.getElementById('progress');
+            // 로컬 개발 서버에서는 앱의 NotFound 페이지가 원래 주소를 ?from= 으로 넘겨준다
+            const from = new URLSearchParams(location.search).get('from');
+            try { path.textContent = from ?? decodeURIComponent(location.pathname) + location.search; }
+            catch { path.textContent = location.pathname + location.search; }
+
+            // 탭이 보일 때만 시간이 흐르게 한다
+            let left = SECONDS * 1000, last = performance.now(), raf = 0;
+            const render = () => {
+                const s = Math.ceil(left / 1000);
+                auto.innerHTML = `${s}초 뒤 자동으로 이동해요 <button type="button" id="cancel">취소</button>`;
+                document.getElementById('cancel').onclick = cancel;
+            };
+            const tick = now => {
+                if (document.hidden) { last = now; raf = requestAnimationFrame(tick); return; }
+                const before = Math.ceil(left / 1000);
+                left -= now - last;
+                last = now;
+                progress.style.transform = `scaleX(${Math.min(1, 1 - left / (SECONDS * 1000))})`;
+                if (left <= 0) { location.replace(home); return; }
+                if (Math.ceil(left / 1000) !== before) render();
+                raf = requestAnimationFrame(tick);
+            };
+            const cancel = () => {
+                cancelAnimationFrame(raf);
+                progress.style.transform = 'scaleX(0)';
+                auto.textContent = '자동 이동을 취소했어요';
+                link.focus();
+            };
+            render();
+            raf = requestAnimationFrame(tick);
+        })();
+    </script>
+</body>
+
+</html>

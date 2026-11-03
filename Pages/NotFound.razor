@@ -1,5 +1,12 @@
 ﻿@page "/not-found"
-@layout MainLayout
+@inject NavigationManager Nav
 
-<h3>Not Found</h3>
-<p>Sorry, the content you are looking for does not exist.</p>
+@code {
+    // GitHub Pages는 없는 주소에 wwwroot/404.html을 바로 내주지만, 로컬 개발 서버는 모든 주소를 앱으로 보내므로
+    // 여기서 같은 404 페이지로 넘긴다 (원래 주소는 from으로 전달)
+    protected override void OnInitialized()
+    {
+        var from = "/" + Nav.ToBaseRelativePath(Nav.Uri);
+        Nav.NavigateTo($"404.html?from={Uri.EscapeDataString(from)}", forceLoad: true, replace: true);
+    }
+}

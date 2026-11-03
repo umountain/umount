@@ -36,11 +36,9 @@ jobs:
       - name: Publish Blazor WebAssembly
         run: dotnet publish umount.csproj -c Release -o release
 
-      # GitHub Pages 라우팅 및 404 오류 방지 처리
-      - name: Add .nojekyll & SPA 404 handling
-        run: |
-          touch release/wwwroot/.nojekyll
-          cp release/wwwroot/index.html release/wwwroot/404.html
+      # _framework 등 밑줄 폴더가 Jekyll에 걸러지지 않게 함 (404 페이지는 wwwroot/404.html)
+      - name: Add .nojekyll
+        run: touch release/wwwroot/.nojekyll
 
       # 커스텀 도메인(wwwroot/CNAME)이 없으면 https://<owner>.github.io/<repo>/ 로 서비스되므로 base href를 저장소 이름으로 변경
       - name: Rewrite base href
