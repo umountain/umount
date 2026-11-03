@@ -176,3 +176,79 @@ a:hover {
     box-shadow: 0 2px 6px rgba(28, 33, 30, .3);
     cursor: pointer;
 }
+
+.dj-start {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid var(--ink);
+    box-shadow: 0 1px 4px rgba(28, 33, 30, .3);
+}
+
+.dj-end {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--ink);
+    border: 3px solid #fff;
+    box-shadow: 0 1px 4px rgba(28, 33, 30, .4);
+}
+
+.dj-pos {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 4px rgba(217, 98, 43, .25);
+}
+
+/* 고도 그래프 */
+.dj-prof-area {
+    fill: rgba(47, 93, 70, .14);
+}
+
+.dj-prof-line {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+}
+
+.dj-prof-label {
+    position: absolute;
+    left: 4px;
+    padding: 0 3px;
+    border-radius: 2px;
+    background: rgba(239, 233, 220, .85);
+    font: 500 10px var(--mono);
+    color: var(--muted);
+    pointer-events: none;
+}
+
+.dj-prof-label[style*="right"] {
+    left: auto;
+}
+
+.dj-prof-cursor {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--ink);
+    pointer-events: none;
+}
+
+.dj-prof-cursor span {
+    position: absolute;
+    top: -2px;
+    margin: 0 6px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--ink);
+    color: var(--paper);
+    font: 600 10px var(--mono);
+    white-space: nowrap;
+}

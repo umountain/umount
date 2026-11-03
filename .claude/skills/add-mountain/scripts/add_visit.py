@@ -11,7 +11,9 @@ entry.json 형식:
   "visit": {
     "date": "2026-02-18", "duration": "09:48 ~ 12:58",
     "course": "A - B - 원점회귀",
-    "parking": {"name": "...", "address": "...", "latitude": 0, "longitude": 0, "fee": "무료"} | null
+    "parking": {"name": "...", "address": "...", "latitude": 0, "longitude": 0, "fee": "무료"} | null,
+    "track": "tracks/16-2026-02-18.json",  (선택, gpx_track.py로 만든 파일)
+    "stats": {"distance": 8.1, "ascent": 822, "calories": 1069}  (선택, health_stats.py 결과)
   }
 }
 기존 산과 이름이 같으면 altitude/location/좌표는 무시하고 visit만 추가한다.
@@ -56,6 +58,9 @@ def main():
         p = v["parking"]
         visit["parking"] = {"name": p["name"], "address": p.get("address"),
                             "latitude": p["latitude"], "longitude": p["longitude"], "fee": p.get("fee")}
+    for k in ("track", "stats"):
+        if v.get(k):
+            visit[k] = v[k]
 
     mountains = data["mountains"]
     existing = next((m for m in mountains if m["name"] == entry["name"]), None)

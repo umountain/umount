@@ -67,60 +67,117 @@
                     <span class="location">@selected.Location</span>
                 </div>
 
-                @if (parkings.Count > 0)
-                {
-                    <div class="parking">
-                        <div class="parking-title"><span class="p-icon">P</span><span>주차장</span></div>
-                        <div class="parking-map" @ref="parkingEl"></div>
-                        <div class="parking-list">
-                            @foreach (var p in parkings)
-                            {
-                                <a href="@GoogleMaps(p)" target="_blank" rel="noopener">
-                                    <div class="parking-info">
-                                        <div class="parking-line">
-                                            <span class="parking-name">@p.Name</span>
-                                            <span class="parking-fee">@p.Fee</span>
-                                        </div>
-                                        <span class="parking-address">@p.Address</span>
-                                    </div>
-                                    <span class="gmaps">구글 지도 ↗</span>
-                                </a>
-                            }
-                        </div>
-                    </div>
-                }
-
-                @foreach (var v in selected.Visits.OrderByDescending(v => v.Date))
-                {
-                    var steps = (v.Course ?? "").Split(" - ", StringSplitOptions.RemoveEmptyEntries);
-                    <div class="visit">
-                        <div class="visit-head">
-                            <span class="visit-date">@FormatDate(v.Date)</span>
-                            <span class="visit-dur">@v.Duration</span>
-                        </div>
-                        <div class="course">
-                            @for (var i = 0; i < steps.Length; i++)
-                            {
-                                <div class="step">
-                                    <div class="rail">
-                                        <span class="dot"></span>
-                                        @if (i < steps.Length - 1)
+                <div class="visits">
+                    @foreach (var v in selected.Visits.OrderByDescending(v => v.Date))
+                    {
+                        var open = v == openVisit;
+                        var bodyId = $"visit-{selected.Id}-{v.Date:yyyyMMdd}";
+                        var steps = (v.Course ?? "").Split(" - ", StringSplitOptions.RemoveEmptyEntries);
+                        var elapsed = Elapsed(v.Duration);
+                        <article @key="v" class="visit @(open ? "open" : null)">
+                            <button class="visit-head" aria-expanded="@(open ? "true" : "false")" aria-controls="@bodyId"
+                                    @onclick="() => Toggle(v)">
+                                <span class="visit-when">
+                                    <span class="visit-date">@FormatDate(v.Date)</span>
+                                    <span class="visit-dur">@v.Duration</span>
+                                </span>
+                                <span class="visit-sum">
+                                    @if (v.Stats is { } st)
+                                    {
+                                        <span><b>@st.Distance.ToString("0.0", CultureInfo.InvariantCulture)</b> km</span>
+                                        @if (st.Ascent is { } asc)
                                         {
-                                            <span class="line"></span>
+                                            <span>↑ <b>@Num(asc)</b> m</span>
+                                        }
+                                    }
+                                    @if (elapsed is not null)
+                                    {
+                                        <span><b>@elapsed</b></span>
+                                    }
+                                    @if (v.Stats is { } st2)
+                                    {
+                                        <span><b>@Num(st2.Calories)</b> kcal</span>
+                                    }
+                                </span>
+                                <span class="chev" aria-hidden="true"></span>
+                            </button>
+
+                            @if (open)
+                            {
+                                <div class="visit-body" id="@bodyId" @ref="visitBodyEl">
+                                    @if (HasMap(v))
+                                    {
+                                        <div class="map-card">
+                                            <div class="map-frame">
+                                                <div class="visit-map" @ref="visitMapEl"></div>
+                                                <div class="map-legend">
+                                                    @if (v.Track is not null)
+                                                    {
+                                                        <span><i class="lg-line"></i>경로</span>
+                                                        <span><i class="lg-start"></i>출발</span>
+                                                        @if (!IsRoundTrip(v))
+                                                        {
+                                                            <span><i class="lg-end"></i>도착</span>
+                                                        }
+                                                    }
+                                                    @if (v.Parking is not null)
+                                                    {
+                                                        <span><i class="p-icon">P</i>주차</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                            @if (v.Track is not null)
+                                            {
+                                                <div class="profile" @ref="profileEl"></div>
+                                            }
+                                        </div>
+                                    }
+
+                                    <div class="section">
+                                        <span class="section-label">코스</span>
+                                        <div class="course">
+                                            @for (var i = 0; i < steps.Length; i++)
+                                            {
+                                                <div class="step">
+                                                    <div class="rail">
+                                                        <span class="dot"></span>
+                                                        @if (i < steps.Length - 1)
+                                                        {
+                                                            <span class="line"></span>
+                                                        }
+                                                    </div>
+                                                    <span class="step-name">@steps[i]</span>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <div class="section">
+                                        <span class="section-label">주차</span>
+                                        @if (v.Parking is { } p)
+                                        {
+                                            <a class="parking" href="@GoogleMaps(p)" target="_blank" rel="noopener">
+                                                <i class="p-icon">P</i>
+                                                <div class="parking-info">
+                                                    <div class="parking-line">
+                                                        <span class="parking-name">@p.Name</span>
+                                                        <span class="parking-fee">@p.Fee</span>
+                                                    </div>
+                                                    <span class="parking-address">@p.Address</span>
+                                                </div>
+                                                <span class="gmaps">구글 지도 ↗</span>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="no-parking">기록 없음</span>
                                         }
                                     </div>
-                                    <span class="step-name">@steps[i]</span>
                                 </div>
                             }
-                        </div>
-                        <div class="visit-meta">
-                            <span class="tag">소요</span>
-                            <span>@Elapsed(v.Duration)</span>
-                            <span class="sep">·</span>
-                            <span>주차 @(v.Parking?.Name ?? "기록 없음") · @(v.Parking?.Fee ?? "—")</span>
-                        </div>
-                    </div>
-                }
+                        </article>
+                    }
+                </div>
             }
         </section>
     </div>
@@ -134,19 +191,22 @@
 
     private List<Mountain> mountains = new();
     private Mountain? selected;
-    private List<ParkingInfo> parkings = new();
+    private Visit? openVisit;
     private string mode = "map";
     private int filter;
 
     private ElementReference mapEl;
-    private ElementReference parkingEl;
+    private ElementReference visitMapEl;
+    private ElementReference profileEl;
+    private ElementReference visitBodyEl;
     private ElementReference detailEl;
     private IJSObjectReference? module;
     private DotNetObjectReference<Home>? selfRef;
     private bool overviewReady;
-    private int? parkingShownFor;
+    private (int, Visit?)? detailShownFor;
     private (int?, int)? lastSync;
     private bool revealPending;
+    private bool revealVisitPending;
 
     protected override async Task OnInitializedAsync()
     {
@@ -187,20 +247,30 @@
             await module.InvokeVoidAsync("syncOverview", selected?.Id, filter);
         }
 
-        if (selected is not null && parkings.Count > 0)
+        var mapVisit = openVisit is not null && HasMap(openVisit) ? openVisit : null;
+        if (selected is not null && mapVisit is not null)
         {
-            if (parkingShownFor != selected.Id)
+            if (detailShownFor != (selected.Id, mapVisit))
             {
-                parkingShownFor = selected.Id;
-                var pts = parkings.Select(p => new { p.Latitude, p.Longitude, href = GoogleMaps(p) });
-                await module.InvokeVoidAsync("showParking", parkingEl,
-                    new { selected.Name, selected.Latitude, selected.Longitude }, pts);
+                detailShownFor = (selected.Id, mapVisit);
+                await module.InvokeVoidAsync("showDetail", visitMapEl,
+                    mapVisit.Track is null ? null : (object)profileEl,
+                    new { selected.Name, selected.Latitude, selected.Longitude },
+                    mapVisit.Parking is { } p ? new { p.Latitude, p.Longitude, href = GoogleMaps(p) } : null,
+                    mapVisit.Track is null ? null : $"data/{mapVisit.Track}",
+                    !IsRoundTrip(mapVisit));
             }
         }
-        else if (parkingShownFor is not null)
+        else if (detailShownFor is not null)
         {
-            parkingShownFor = null;
-            await module.InvokeVoidAsync("disposeParking");
+            detailShownFor = null;
+            await module.InvokeVoidAsync("disposeDetail");
+        }
+
+        if (revealVisitPending)
+        {
+            revealVisitPending = false;
+            if (openVisit is not null) await module.InvokeVoidAsync("revealVisit", visitBodyEl);
         }
 
         if (revealPending)
@@ -226,11 +296,23 @@
     private void Select(int id)
     {
         selected = mountains.FirstOrDefault(m => m.Id == id);
-        parkings = selected?.Visits
-            .Where(v => v.Parking is not null)
-            .Select(v => v.Parking!)
-            .DistinctBy(p => p.Name)
-            .ToList() ?? new();
+        openVisit = selected?.Visits.OrderByDescending(v => v.Date).FirstOrDefault();
+    }
+
+    // 방문 카드 펼치기/접기 (한 번에 하나만 열림)
+    private void Toggle(Visit v)
+    {
+        openVisit = openVisit == v ? null : v;
+        revealVisitPending = openVisit is not null;
+    }
+
+    private static bool HasMap(Visit v) => v.Track is not null || v.Parking is not null;
+
+    // 코스가 "원점회귀"로 끝나거나 출발지로 돌아오면 원점회귀 (GPX 시작·종료 위치는 기록 시점에 따라 달라 쓰지 않음)
+    private static bool IsRoundTrip(Visit v)
+    {
+        var steps = (v.Course ?? "").Split(" - ", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return steps.Length < 2 || steps[^1] == "원점회귀" || steps[^1] == steps[0];
     }
 
     private async Task SetMode(string next)
@@ -249,7 +331,10 @@
     private static string InkFor(Mountain m) => m.Altitude >= 1000 ? "#2f5d46" : "#5b6e5e";
 
     private static string Alt(double altitude) =>
-        Math.Round(altitude, MidpointRounding.AwayFromZero).ToString("N0", CultureInfo.InvariantCulture) + "m";
+        Num(altitude) + "m";
+
+    private static string Num(double value) =>
+        Math.Round(value, MidpointRounding.AwayFromZero).ToString("N0", CultureInfo.InvariantCulture);
 
     private static string FirstVisit(Mountain m) =>
         m.Visits.Count == 0 ? "" : m.Visits.Min(v => v.Date).ToString("yy.MM.dd", CultureInfo.InvariantCulture);
@@ -257,13 +342,13 @@
     private static string FormatDate(DateTime d) =>
         $"{d.ToString("yyyy.MM.dd", CultureInfo.InvariantCulture)} ({WeekDays[(int)d.DayOfWeek]})";
 
-    private static string Elapsed(string? duration)
+    private static string? Elapsed(string? duration)
     {
         var parts = duration?.Split('~');
         if (parts is not { Length: 2 }
             || !TimeSpan.TryParse(parts[0].Trim(), CultureInfo.InvariantCulture, out var start)
             || !TimeSpan.TryParse(parts[1].Trim(), CultureInfo.InvariantCulture, out var end))
-            return "—";
+            return null;
         var minutes = (int)(end - start).TotalMinutes;
         return $"{minutes / 60}h {minutes % 60:00}m";
     }
@@ -278,7 +363,7 @@
             try
             {
                 await module.InvokeVoidAsync("disposeOverview");
-                await module.InvokeVoidAsync("disposeParking");
+                await module.InvokeVoidAsync("disposeDetail");
                 await module.DisposeAsync();
             }
             catch (JSDisconnectedException) { }

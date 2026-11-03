@@ -17,6 +17,7 @@ description: 등산 기록(산 이름, 높이, 방문일자, 시간, 코스, 주
 | 시간 | 권장 | 09:48 ~ 12:58 → `"09:48 ~ 12:58"` (24시간, 두 자리) |
 | 코스 | ✅ | 백둔리 제 1주차장 - 소망능선 - 정상 - 원점회귀 (구분자 ` - `) |
 | 주차장 | 선택 | 이름 + 주차비. 없으면 `parking: null` |
+| GPX | 선택 | GPX 파일 경로, 또는 Apple 건강 앱 내보내기 폴더(`.../apple_health_export`) |
 
 - 필수 값이 빠졌으면 진행 전에 한 번에 모아서 묻는다. 시간이 없으면 "시간도 있나요?"라고 묻고, 없다고 하면 `duration: null`.
 - 주차비가 없으면 묻고, 모르면 `fee: null`.
@@ -58,18 +59,30 @@ description: 등산 기록(산 이름, 높이, 방문일자, 시간, 코스, 주
    - 고른 좌표를 `reverse`로 조회해 주소를 만든다. 도로명+번지가 있으면 `경기도 가평군 설악면 유명산길 79-53` 형식, 번지가 없으면 리 단위까지만 (`경기 가평군 북면 백둔리 (백둔로)`). 주소를 지어내지 않는다.
    - 주차장 `name`은 사용자가 준 이름을 그대로 쓴다. 지도상 공식 명칭이 다르면 보고할 때 알려준다.
 
-5. **JSON 갱신** — 스크래치패드에 entry 파일을 쓰고 먼저 `--dry-run`으로 검증한 뒤 반영한다.
+5. **경로 (GPX가 있을 때)**
+   - 건강 앱 내보내기 폴더를 주면 `workout-routes/route_<날짜>_<종료시각>.gpx` 중 방문일과 같은 파일을 고른다. 파일명 시각은 **종료 시각(KST)**, GPX 안의 `<time>`은 UTC(+9시간)다. 시작·종료가 방문 시간과 맞는지, 경로가 정상 근처(수백 m 이내)를 지나는지 확인한다. 같은 날 여러 개로 끊긴 경우(예: 청계산 08:28~09:29 + 10:28~11:39)는 모두 넘긴다.
+   ```bash
+   python3 .claude/skills/add-mountain/scripts/gpx_track.py wwwroot/data/tracks/<id 두자리>-<YYYY-MM-DD>.json <a.gpx> [b.gpx ...]
+   ```
+   - 새 산이면 id는 기존 최댓값+1. 결과 파일(수 KB)을 entry의 `visit.track`에 `tracks/<id>-<날짜>.json`으로 넣는다. 확장자는 `.json` 유지(개발 서버가 `.geojson`을 서빙하지 않음).
+
+   - 같은 내보내기 폴더의 `export.xml`에서 방문 시간과 겹치는 운동 기록의 거리·상승고도·칼로리를 합산해 entry의 `visit.stats`에 넣는다 (끊긴 기록은 자동 합산, 방문 시간 밖의 걷기 기록은 제외).
+     ```bash
+     python3 .claude/skills/add-mountain/scripts/health_stats.py <export.xml> --visit <YYYY-MM-DD> "<HH:mm ~ HH:mm>"
+     ```
+
+6. **JSON 갱신** — 스크래치패드에 entry 파일을 쓰고 먼저 `--dry-run`으로 검증한 뒤 반영한다.
    ```bash
    python3 .claude/skills/add-mountain/scripts/add_visit.py wwwroot/data/mountains.json <entry.json> --dry-run
    python3 .claude/skills/add-mountain/scripts/add_visit.py wwwroot/data/mountains.json <entry.json>
    ```
    entry 형식은 `add_visit.py` 상단 docstring 참고. 새 산이면 `id`는 자동으로 최댓값+1, 기존 산이면 visits에 날짜순으로 추가된다. 같은 날짜 기록이 이미 있으면 중단된다.
 
-6. **확인** — `git diff --stat wwwroot/data/mountains.json`으로 추가만 있는지(기존 줄 변경 없음) 확인한다.
+7. **확인** — `git diff --stat wwwroot/data/mountains.json`으로 추가만 있는지(기존 줄 변경 없음) 확인한다.
 
 ## 보고
 
-한국어로 다음을 표로 보여준다: 이름/높이, location, 정상 좌표, 방문(일자·시간), 코스, 주차장(이름·요금·좌표·주소).
+한국어로 다음을 표로 보여준다: 이름/높이, location, 정상 좌표, 방문(일자·시간), 코스, 주차장(이름·요금·좌표·주소), 경로(GPX 파일·포인트 수), 기록(거리·상승·칼로리).
 그리고 좌표를 어떻게 골랐는지(후보가 여러 개였는지, 공식 명칭 차이, 행정구역 경계 등 애매한 점)를 짧게 적는다.
 
 커밋/푸시는 하지 않는다. 마지막에 "커밋하고 push해서 배포할까요?"라고 묻는다 (`main`에 push하면 GitHub Pages가 자동 재배포됨).

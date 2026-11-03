@@ -19,6 +19,17 @@ public class Visit
     public string? Duration { get; set; }
     public string? Course { get; set; }
     public ParkingInfo? Parking { get; set; }
+    // GPX에서 변환한 경로 GeoJSON (data/ 기준 상대 경로)
+    public string? Track { get; set; }
+    // Apple 건강 앱 운동 기록 합산
+    public VisitStats? Stats { get; set; }
+}
+
+public class VisitStats
+{
+    public double Distance { get; set; }   // km
+    public double? Ascent { get; set; }    // m
+    public double Calories { get; set; }   // kcal
 }
 
 public class ParkingInfo

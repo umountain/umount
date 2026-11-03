@@ -12,7 +12,12 @@
           "date": "2023-09-09",
           "duration": "13:15 ~ 15:18",
           "course": "물푸레마을 풀벌레공원 - 법화산 정상 - 원점회귀",
-          "parking": null
+          "parking": null,
+          "stats": {
+            "distance": 9.0,
+            "ascent": null,
+            "calories": 856
+          }
         }
       ]
     },
@@ -34,6 +39,12 @@
             "latitude": 37.4492972,
             "longitude": 127.0582832,
             "fee": "무료"
+          },
+          "track": "tracks/02-2023-10-08.json",
+          "stats": {
+            "distance": 7.1,
+            "ascent": 571,
+            "calories": 899
           }
         }
       ]
@@ -56,6 +67,12 @@
             "latitude": 37.4771555,
             "longitude": 127.1868908,
             "fee": "5,000원"
+          },
+          "track": "tracks/03-2023-10-15.json",
+          "stats": {
+            "distance": 8.9,
+            "ascent": 401,
+            "calories": 835
           }
         },
         {
@@ -68,6 +85,12 @@
             "latitude": 37.4771555,
             "longitude": 127.1868908,
             "fee": "5,000원"
+          },
+          "track": "tracks/03-2023-09-24.json",
+          "stats": {
+            "distance": 13.3,
+            "ascent": 661,
+            "calories": 1288
           }
         }
       ]
@@ -90,6 +113,12 @@
             "latitude": 37.300485,
             "longitude": 127.035833,
             "fee": "5,000원 (종일권)"
+          },
+          "track": "tracks/04-2023-10-22.json",
+          "stats": {
+            "distance": 15.1,
+            "ascent": 902,
+            "calories": 1663
           }
         }
       ]
@@ -112,6 +141,12 @@
             "latitude": 37.4675185,
             "longitude": 126.9448533,
             "fee": "1,000원 (30분)"
+          },
+          "track": "tracks/05-2023-10-29.json",
+          "stats": {
+            "distance": 14.6,
+            "ascent": 659,
+            "calories": 1581
           }
         }
       ]
@@ -134,6 +169,12 @@
             "latitude": 37.5351036,
             "longitude": 127.230025,
             "fee": "2,000원 (종일권)"
+          },
+          "track": "tracks/06-2023-11-04.json",
+          "stats": {
+            "distance": 5.5,
+            "ascent": 215,
+            "calories": 620
           }
         }
       ]
@@ -156,6 +197,12 @@
             "latitude": 37.5448439,
             "longitude": 127.5833904,
             "fee": "3,000원"
+          },
+          "track": "tracks/07-2023-11-11.json",
+          "stats": {
+            "distance": 11.6,
+            "ascent": 1121,
+            "calories": 1451
           }
         }
       ]
@@ -178,6 +225,12 @@
             "latitude": 37.6703882,
             "longitude": 127.2518565,
             "fee": "7,000원 (종일권), 기본 30분 600원 - 10분마다 300원, 일요일 무료"
+          },
+          "track": "tracks/08-2023-11-19.json",
+          "stats": {
+            "distance": 10.5,
+            "ascent": 818,
+            "calories": 1253
           }
         }
       ]
@@ -200,6 +253,12 @@
             "latitude": 37.3606841,
             "longitude": 127.1947967,
             "fee": "무료"
+          },
+          "track": "tracks/09-2023-11-26.json",
+          "stats": {
+            "distance": 3.8,
+            "ascent": 354,
+            "calories": 506
           }
         },
         {
@@ -212,6 +271,12 @@
             "latitude": 37.3606841,
             "longitude": 127.1947967,
             "fee": "무료"
+          },
+          "track": "tracks/09-2025-01-01.json",
+          "stats": {
+            "distance": 6.0,
+            "ascent": 419,
+            "calories": 594
           }
         },
         {
@@ -224,6 +289,12 @@
             "latitude": 37.3606841,
             "longitude": 127.1947967,
             "fee": "무료"
+          },
+          "track": "tracks/09-2025-10-25.json",
+          "stats": {
+            "distance": 3.5,
+            "ascent": 325,
+            "calories": 418
           }
         }
       ]
@@ -246,6 +317,12 @@
             "latitude": 37.7052086,
             "longitude": 127.1064552,
             "fee": "무료"
+          },
+          "track": "tracks/10-2023-12-09.json",
+          "stats": {
+            "distance": 7.5,
+            "ascent": 501,
+            "calories": 885
           }
         }
       ]
@@ -268,6 +345,12 @@
             "latitude": 36.5332589,
             "longitude": 127.8232502,
             "fee": "5,000원 (종일권)"
+          },
+          "track": "tracks/11-2023-12-25.json",
+          "stats": {
+            "distance": 15.3,
+            "ascent": 802,
+            "calories": 1632
           }
         }
       ]
@@ -290,6 +373,12 @@
             "latitude": 37.4266108,
             "longitude": 128.2614876,
             "fee": "무료"
+          },
+          "track": "tracks/12-2024-05-03.json",
+          "stats": {
+            "distance": 14.1,
+            "ascent": 1114,
+            "calories": 1722
           }
         }
       ]
@@ -312,6 +401,12 @@
             "latitude": 37.3603977,
             "longitude": 128.0217082,
             "fee": "중형 4,000원"
+          },
+          "track": "tracks/13-2024-06-21.json",
+          "stats": {
+            "distance": 9.5,
+            "ascent": 925,
+            "calories": 1298
           }
         }
       ]
@@ -334,6 +429,12 @@
             "latitude": 37.7072423,
             "longitude": 128.4443676,
             "fee": "무료"
+          },
+          "track": "tracks/14-2024-12-26.json",
+          "stats": {
+            "distance": 9.8,
+            "ascent": 823,
+            "calories": 1292
           }
         }
       ]
@@ -356,6 +457,12 @@
             "latitude": 37.5926758,
             "longitude": 127.4911408,
             "fee": "5,000원"
+          },
+          "track": "tracks/15-2025-11-08.json",
+          "stats": {
+            "distance": 9.1,
+            "ascent": 579,
+            "calories": 1040
           }
         }
       ]
@@ -378,6 +485,12 @@
             "latitude": 37.8959516,
             "longitude": 127.4427067,
             "fee": "무료"
+          },
+          "track": "tracks/16-2026-02-18.json",
+          "stats": {
+            "distance": 8.1,
+            "ascent": 822,
+            "calories": 1069
           }
         }
       ]
@@ -400,6 +513,12 @@
             "latitude": 36.9881898,
             "longitude": 128.459688,
             "fee": "무료"
+          },
+          "track": "tracks/17-2026-05-05.json",
+          "stats": {
+            "distance": 17.0,
+            "ascent": 1362,
+            "calories": 2137
           }
         }
       ]
@@ -422,6 +541,12 @@
             "latitude": 37.9355278,
             "longitude": 127.4890604,
             "fee": "무료"
+          },
+          "track": "tracks/18-2026-10-03.json",
+          "stats": {
+            "distance": 14.2,
+            "ascent": 1145,
+            "calories": 1622
           }
         }
       ]
