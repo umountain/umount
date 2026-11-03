@@ -258,7 +258,8 @@
                     new { selected.Name, selected.Latitude, selected.Longitude },
                     mapVisit.Parking is { } p ? new { p.Latitude, p.Longitude, href = GoogleMaps(p) } : null,
                     mapVisit.Track is null ? null : $"data/{mapVisit.Track}",
-                    !IsRoundTrip(mapVisit));
+                    !IsRoundTrip(mapVisit),
+                    mapVisit.Stats?.Distance);
             }
         }
         else if (detailShownFor is not null)

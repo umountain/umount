@@ -131,19 +131,24 @@ function distM([lon1, lat1], [lon2, lat2]) {
     return Math.hypot((lon1 - lon2) * Math.cos(lat1 * Math.PI / 180), lat1 - lat2) * 111320;
 }
 
-// 고도 그래프: 누적 거리(끊긴 구간은 건너뜀) 대비 고도. 마우스를 올리면 지도에 위치 표시
-function drawProfile(el, geom, map, ml) {
+// 고도 그래프: 누적 거리 대비 고도. 마우스를 올리면 지도에 위치 표시
+// 거리는 좌표 4번째 값(줄이기 전 원본 GPX 누적 거리)을 쓰고, totalKm(워치 기록)이 있으면 끝값을 거기에 맞춘다
+function drawProfile(el, geom, map, ml, totalKm) {
     el.innerHTML = '';
     const pts = [];
-    let dist = 0;
+    let sum = 0;
     (geom.type === 'LineString' ? [geom.coordinates] : geom.coordinates).forEach(line => {
         line.forEach((c, i) => {
-            if (i > 0) dist += distM(line[i - 1], c);
-            if (c.length > 2) pts.push({ d: dist, e: c[2], c });
+            if (i > 0) sum += distM(line[i - 1], c);
+            if (c.length > 2) pts.push({ d: c[3] ?? sum, e: c[2], c });
         });
     });
-    el.hidden = pts.length < 2;
+    el.hidden = pts.length < 2 || !pts.at(-1).d;
     if (el.hidden) return { remove() { } };
+
+    const scale = totalKm ? totalKm * 1000 / pts.at(-1).d : 1;
+    pts.forEach(p => p.d *= scale);
+    const dist = pts.at(-1).d;
 
     const lo = Math.min(...pts.map(p => p.e)), hi = Math.max(...pts.map(p => p.e));
     const pad = Math.max((hi - lo) * .12, 10);
@@ -195,8 +200,9 @@ function lastCoord(geom) {
 
 // 방문 하나의 지도: 정상 + 그날 주차장 + 경로(출발/도착) + 고도 그래프
 // mountain: { name, latitude, longitude }, parking: { latitude, longitude, href } | null,
-// track: GeoJSON url | null, profileEl: 고도 그래프 요소 | null, showEnd: 도착점 표시 (원점회귀가 아닌 코스)
-export async function showDetail(el, profileEl, mountain, parking, track, showEnd) {
+// track: GeoJSON url | null, profileEl: 고도 그래프 요소 | null, showEnd: 도착점 표시 (원점회귀가 아닌 코스),
+// distanceKm: 워치 기록 거리 (고도 그래프 총 거리를 맞춤) | null
+export async function showDetail(el, profileEl, mountain, parking, track, showEnd, distanceKm) {
     const ml = await waitForMapLibre();
     if (!el.isConnected) return;
 
@@ -249,7 +255,7 @@ export async function showDetail(el, profileEl, mountain, parking, track, showEn
     }
 
     // 고도 그래프 위치 표시 마커는 마지막에 추가해 가장 위에 보이게 한다
-    if (profileEl && data) d.markers.push(drawProfile(profileEl, data.geometry, map, ml));
+    if (profileEl && data) d.markers.push(drawProfile(profileEl, data.geometry, map, ml, distanceKm));
 
     if (parking || data) map.fitBounds(bounds, { padding: 36, maxZoom: 15, duration: 0 });
 }

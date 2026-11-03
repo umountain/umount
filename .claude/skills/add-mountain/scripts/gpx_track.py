@@ -5,7 +5,9 @@
   gpx_track.py <out.json> <in.gpx> [in2.gpx ...] [--tolerance 4]
 
 여러 GPX를 주면 시간순으로 이어 MultiLineString으로 저장한다 (운동 기록이 중간에 끊긴 경우).
-좌표는 [lon, lat, ele] (소수 5자리 ≈ 1m, 고도는 정수 m).
+좌표는 [lon, lat, ele, dist] (소수 5자리 ≈ 1m, 고도 정수 m, dist = 줄이기 전 원본 기준 누적 거리 m).
+점을 줄이면 지그재그 길이 펴져 거리가 짧아지므로, 고도 그래프는 원본 누적 거리(dist)를 쓴다.
+끊긴 구간 사이의 거리는 더하지 않는다.
 """
 import argparse
 import json
@@ -26,6 +28,23 @@ def read_gpx(path):
         pts.append((float(lon or lon2), float(lat or lat2), float(ele.group(1)) if ele else None,
                     t.group(1) if t else ""))
     return pts
+
+
+def dist_m(a, b):
+    return math.hypot((a[0] - b[0]) * math.cos(math.radians(a[1])), a[1] - b[1]) * 111320
+
+
+def with_distance(segments):
+    """각 점에 원본 기준 누적 거리(m)를 붙인다: (lon, lat, ele, time, dist)"""
+    out, total = [], 0.0
+    for seg in segments:
+        line = []
+        for i, p in enumerate(seg):
+            if i:
+                total += dist_m(seg[i - 1], p)
+            line.append(p + (total,))
+        out.append(line)
+    return out
 
 
 def simplify(pts, tol_m):
@@ -55,7 +74,7 @@ def simplify(pts, tol_m):
 
 
 def coords(pts):
-    return [[round(p[0], 5), round(p[1], 5)] + ([round(p[2])] if p[2] is not None else []) for p in pts]
+    return [[round(p[0], 5), round(p[1], 5), round(p[2]) if p[2] is not None else 0, round(p[4])] for p in pts]
 
 
 def main():
@@ -68,6 +87,7 @@ def main():
     if not segments:
         sys.exit("GPX에 trkpt가 없습니다")
     segments.sort(key=lambda s: s[0][3])
+    segments = with_distance(segments)
     lines = [coords(simplify(s, args.tolerance)) for s in segments]
     geom = {"type": "LineString", "coordinates": lines[0]} if len(lines) == 1 else \
         {"type": "MultiLineString", "coordinates": lines}
@@ -76,8 +96,9 @@ def main():
         json.dump(feature, f, separators=(",", ":"))
         f.write("\n")
     raw = sum(len(s) for s in segments)
-    print(json.dumps({"out": args.out, "points": raw, "kept": sum(len(l) for l in lines),
-                      "segments": len(lines), "start": segments[0][0][3], "end": segments[-1][-1][3]}, ensure_ascii=False))
+    print(json.dumps({"out": args.out, "points": raw, "kept": sum(len(l) for l in lines), "segments": len(lines),
+                      "distance_km": round(segments[-1][-1][4] / 1000, 2),
+                      "start": segments[0][0][3], "end": segments[-1][-1][3]}, ensure_ascii=False))
 
 
 if __name__ == "__main__":
